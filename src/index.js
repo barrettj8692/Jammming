@@ -5,7 +5,7 @@ import App from './components/App/App';
 import registerServiceWorker from './registerServiceWorker';
 
 
-const jammming =
+
 
 
 ReactDOM.render(
