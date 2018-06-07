@@ -14,6 +14,8 @@ class Track extends React.Component {
 
   }
 
+/* Adding removing tacks passing props */
+
 
   renderAction (){
     if (this.props.isRemoval){

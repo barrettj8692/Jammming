@@ -14,14 +14,18 @@ class SearchResults extends React.Component {
 
   }
 
+/* Search Result layout */
+
 
 
   render(){
     return (
       <div className="SearchResults">
         <h2>Results</h2>
-        <TrackList tracks={this.props.searchResults} isRemoval={this.state.isRemoval}
-        onAdd={this.props.onAdd}/>
+        <TrackList
+          tracks={this.props.searchResults}
+          isRemoval={this.state.isRemoval}
+          onAdd={this.props.onAdd}/>
       </div>
     )
   };

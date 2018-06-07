@@ -5,11 +5,11 @@ class NewPlaylist extends React.Component {
   constructor(props){
     super(props);
 
-
     this.handlePlaylistClear = this.handlePlaylistClear.bind(this);
 
-
   }
+
+/* Clearing current Playlist button */
 
   handlePlaylistClear() {
     this.props.playlistClear();
@@ -21,7 +21,8 @@ class NewPlaylist extends React.Component {
   render() {
     return (
       <div className="NewPlaylist">
-        <a className="NewPlaylist-SearchBar" onClick={this.handlePlaylistClear}>New Playlist</a>
+        <a className="NewPlaylist-SearchBar"
+          onClick={this.handlePlaylistClear}>New Playlist</a>
       </div>
     )
   }

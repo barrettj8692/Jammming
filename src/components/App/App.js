@@ -16,8 +16,6 @@ class App extends Component {
       playlistTracks:[],
       playlistNames: [],
       style: "none"
-
-
       }
 
       this.removeTrack=this.removeTrack.bind(this);
@@ -29,120 +27,164 @@ class App extends Component {
       this.floatBoxYes= this.floatBoxYes.bind(this);
       this.floatBoxNo= this.floatBoxNo.bind(this);
       this.playlistDup= this.playlistDup.bind(this);
-    }
-
-    addTrack(track) {
-      let tracks = this.state.playlistTracks;
-      if (!this.state.playlistTracks.includes(track)) {
-        tracks.push(track);
-        this.setState({playlistTracks: tracks});
-      }
-    }
-
-
-    removeTrack(track){
-      const removeTrack = this.state.playlistTracks.filter(playlistTrack => track.id !== playlistTrack.id);
-      this.setState({playlistTracks : removeTrack});
 
     }
 
-    playlistClear(){
-      const clearPlaylist = [];
-      const clearName = "My Playlist";
-      this.setState ({playlistTracks: clearPlaylist});
-      this.setState ({playlistName: clearName});
+
+/* Add Treack to Playlist */
+
+  addTrack(track) {
+    let tracks = this.state.playlistTracks;
+    if (!this.state.playlistTracks.includes(track)) {
+      tracks.push(track);
+      this.setState({playlistTracks: tracks});
     }
+  }
 
-    playlistDup(){
-      const style = "block";
-      this.setState ({style : style})
+/* Remove Track From Playlist */
 
-    }
+  removeTrack(track){
+    const removeTrack = this.state.playlistTracks.filter(playlistTrack => track.id !== playlistTrack.id);
+    this.setState({playlistTracks : removeTrack});
+  }
 
-    floatBoxYes() {
-      const style = "none";
-      this.setState ({style : style})
-      console.log(this.state.style)
+/* Clear current playlist */
 
-    }
+  playlistClear(){
+    const clearPlaylist = [];
+    const clearName = "My Playlist";
+    this.setState ({playlistTracks: clearPlaylist});
+    this.setState ({playlistName: clearName});
+  }
 
-    floatBoxNo() {
-      const style = "none";
-      this.setState ({style : style})
-    }
+/* Check for duplicate playlist on Spotify */
 
-    updatePlaylistName(name){
-      this.setState ({playlistName: name})
-    }
+  playlistDup(){
+    const style = "block";
+    this.setState ({style : style})
+  }
 
-    search(term){
-      Spotify.search(term).then(searchResults => this.setState ({searchResults : searchResults}));
-    }
+/* Error box for dup playlist */
 
-    savePlaylist(){
-      let playlistName = this.state.playlistName;
+  floatBoxYes() {
+    let playlistName = this.state.playlistName;
+    let playlistTracks = this.state.playlistTracks;
+    const style = "none";
+    this.setState ({style : style});
+    Spotify.saveToExsistingPlaylist(playlistName, playlistTracks);
+  }
+
+  floatBoxNo() {
+    const style = "none";
+    this.setState ({style : style})
+  }
+
+  updatePlaylistName(name){
+    this.setState ({playlistName: name})
+  }
+
+/* SearchBar function and Only display songs not currently present in the playlist in the search results */
+
+  search(term){
+    let playlistTracks = this.state.playlistTracks;
+    let playlistId = [];
+    playlistTracks.map(tracks => {
+      playlistId.push(tracks.id);
+    })
+    Spotify.search(term).then(searchResults => {
       let playlistTracks = this.state.playlistTracks;
-      if(!Spotify.accessTokenCheck()){
-        Spotify.getAccessToken();
-      }
-      Spotify.getPlaylistName()
-      .then(playlistNames => {
-        this.setState({playlistNames: playlistNames})
-        console.log(this.state.playlistNames)
+      let searchResultsFilter = [];
+      searchResults.forEach(tracks => {
+        if(playlistTracks.length === 0 ) {
+          searchResultsFilter.push(tracks)
+        } else if(!playlistId.includes(tracks.id)) {
+          searchResultsFilter.push(tracks);
+        }
       })
-      .then(() => {
+      this.setState ({searchResults : searchResultsFilter});
+    });
+  }
+
+/* Saving playlist */
+
+  savePlaylist(){
+    let playlistTracks = this.state.playlistTracks;
+    if(!Spotify.accessTokenCheck()){
+      Spotify.getAccessToken();
+    }
+    Spotify.getPlaylistName()
+    .then(playlistNames => {
+      this.setState({playlistNames: playlistNames})
+    })
+    .then(() => {
       let playlistName = this.state.playlistName;
       const playlistNames = [];
       this.state.playlistNames.map(playlist =>
         playlistNames.push(playlist.name));
-      console.log(playlistName);
-      console.log(playlistNames);
-      console.log(playlistNames.includes(playlistName))
       if(!playlistNames.includes(playlistName)) {
         Spotify.savePlaylist(playlistName, playlistTracks);
       } else {
         this.playlistDup();
       }
-      })
-      }
-      /*if (playlistTracks.length === 0) {
-        return;
-      } else {
-      Spotify.getPlaylistList();
-    }*/
-
-
-
-
-
+    })
+  }
 
   render() {
     return (
-
-       <div className="App">
+      <div className="App">
         <SearchBar onSearch={this.search}/>
         <FloatBox
-        clickNo = {this.floatBoxNo}
-        clickYes = {this.floatBoxYes}
-        style={this.state.style}/>
+          clickNo = {this.floatBoxNo}
+          clickYes = {this.floatBoxYes}
+          style={this.state.style}/>
         <div className="App-playlist">
-            <SearchResults
-            searchResults={this.state.searchResults}  onAdd={this.addTrack}/>
-            <div className="NewPlaylist">
-              <NewPlaylist
+          <SearchResults
+            searchResults={this.state.searchResults}
+            onAdd={this.addTrack}/>
+          <div className="NewPlaylist">
+            <NewPlaylist
               playlistClear = {this.playlistClear}/>
-              <Playlist
-              playlistTracks={this.state.playlistTracks} playlistName={this.state.playlistName}
+            <Playlist
+              playlistTracks={this.state.playlistTracks}
+              playlistName={this.state.playlistName}
               onNameChange={this.updatePlaylistName}
               onRemove={this.removeTrack}
               savePlaylist={this.savePlaylist}/>
-            </div>
-
+          </div>
         </div>
       </div>
     );
   }
+
 }
 
 
 export default App;
+
+
+/* search(term){
+  let playlistTracks = this.state.playlistTracks;
+  let playlistId = [];
+  playlistTracks.map(tracks => {
+    playlistId.push(tracks.id);
+  })
+  console.log(playlistId);
+  let searchResultsId = [];
+  let searchResultsFilter = [];
+
+  Spotify.search(term).then(searchResults => {
+    searchResults.forEach(tracks => {
+      console.log(tracks)
+      console.log(playlistId)
+      if(playlistId.length === 0 ) {
+        searchResultsFilter.push(tracks);
+        console.log(searchResultsFilter)
+      } else if(!tracks.id.includes(playlistId)) {
+        searchResultsFilter.push(tracks);
+      }
+    })
+    this.setState ({searchResults : searchResultsFilter});
+  });
+  this.setState ({searchResults : searchResultsFilter});
+  console.log(searchResultsFilter)
+} */
